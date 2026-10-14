@@ -15,6 +15,14 @@ export interface UsageRecordDTO {
   timestamp: string
 }
 
+export interface AdminUsageQuery {
+  page: number
+  size: number
+  sort?: string
+  userId?: string
+  model?: string
+}
+
 export interface UsageSummaryDTO {
   totalRequests: number
   totalInputTokens: number
@@ -27,6 +35,11 @@ export async function getUsageHistory(page = 0, size = 10): Promise<PageDTO<Usag
   const { data } = await apiClient.get<PageDTO<UsageRecordDTO>>('/usage', {
     params: { page, size, sort: 'timestamp,desc' },
   })
+  return data
+}
+
+export async function getAdminUsageHistory(query: AdminUsageQuery): Promise<PageDTO<UsageRecordDTO>> {
+  const { data } = await apiClient.get<PageDTO<UsageRecordDTO>>('/admin/usage', { params: query })
   return data
 }
 
