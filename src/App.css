@@ -165,22 +165,84 @@
   text-align: end;
 }
 
+.conversation-detail-card {
+  border-color: #e5eaf1;
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(24, 45, 78, .06);
+}
+
+.conversation-detail-card > .ant-card-body {
+  padding: 24px;
+}
+
+.conversation-heading {
+  align-items: center;
+  margin: -2px -2px 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.conversation-heading h2.ant-typography {
+  margin-top: 6px;
+  color: #1e2c43;
+  font-size: clamp(21px, 2.6vw, 28px);
+  letter-spacing: -.025em;
+}
+
+.conversation-heading .ant-space {
+  justify-content: flex-end;
+}
+
+.conversation-heading .ant-btn,
+.conversation-heading .ant-select-selector {
+  border-radius: 10px !important;
+}
+
 .message-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  min-height: 160px;
-  max-height: 60vh;
+  gap: 18px;
+  min-height: 280px;
+  max-height: min(62vh, 720px);
   overflow-y: auto;
-  padding: 18px 0;
+  padding: 20px 8px;
+  border: 1px solid #e9edf3;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fafbfd, #f7f9fc);
+  scrollbar-gutter: stable;
 }
 
 .message-bubble {
-  max-width: min(80%, 760px);
-  padding: 14px 16px;
-  border: 1px solid #edf0f5;
-  border-radius: 12px;
+  max-width: min(78%, 760px);
+  padding: 15px 18px;
+  border: 1px solid #e8edf4;
+  border-radius: 17px;
+  box-shadow: 0 4px 12px rgba(32, 52, 81, .035);
   white-space: pre-wrap;
+}
+
+.message-user {
+  border-color: #d5e4fa;
+  border-end-end-radius: 6px;
+  background: #eaf2ff;
+}
+
+.message-assistant,
+.message-system {
+  border-color: #e5e9ef;
+  border-end-start-radius: 6px;
+  background: #fff;
+}
+
+.message-bubble > .ant-typography:first-child {
+  color: #60728e;
+  font-size: 12px;
+}
+
+.message-bubble > .ant-typography:last-child {
+  display: block;
+  margin-top: 10px;
+  font-size: 11px;
 }
 
 .message-bubble .ant-typography {
@@ -189,6 +251,13 @@
 
 .message-bubble .ant-typography-paragraph {
   margin: 8px 0;
+}
+
+.message-content {
+  unicode-bidi: plaintext;
+  text-align: start;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .message-user {
@@ -224,21 +293,170 @@
   gap: 20px;
 }
 
+.dashboard-overview {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, .75fr);
+  align-items: stretch;
+  gap: 22px;
+}
+
+.dashboard-overview > * {
+  min-width: 0;
+}
+
+.dashboard-overview .ant-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 100%;
+  row-gap: 8px;
+}
+
+.dashboard-overview .dashboard-welcome {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 176px;
+  padding: 28px 32px;
+  border: 1px solid #e3eaf4;
+  border-radius: 18px;
+  background: linear-gradient(115deg, #fff 12%, #f1f6ff 100%);
+  box-shadow: 0 10px 28px rgba(32, 65, 112, .045);
+}
+
+.dashboard-welcome-copy {
+  max-width: 540px;
+}
+
+.dashboard-welcome h2.ant-typography {
+  margin: 8px 0 6px;
+  color: #172b4d;
+  font-size: clamp(24px, 3vw, 32px);
+  letter-spacing: -.035em;
+}
+
 .dashboard-welcome .ant-btn {
-  margin-top: 18px;
+  min-height: 42px;
+  margin: 0;
+  padding-inline: 20px;
+  border-radius: 11px;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, .18);
+}
+
+.dashboard-models,
+.dashboard-usage {
+  border-color: #e5ebf3;
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(32, 65, 112, .045);
+}
+
+.dashboard-models > .ant-card-body,
+.dashboard-usage > .ant-card-body {
+  padding: 24px;
+}
+
+.dashboard-models {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.dashboard-models .section-heading {
+  margin-bottom: 18px;
+}
+
+.dashboard-models .ant-row {
+  display: grid;
+  gap: 12px;
+  margin-inline: 0 !important;
+}
+
+.dashboard-models .ant-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+  max-width: 100%;
+  row-gap: 8px;
+}
+
+.dashboard-models .ant-pagination-options {
+  max-width: 100%;
+  margin-inline-start: 8px;
+}
+
+.dashboard-models .ant-row > .ant-col {
+  width: 100%;
+  max-width: none;
 }
 
 .model-card {
   min-height: 76px;
+  border-color: #e6edf6;
+  border-radius: 13px;
+  background: #fbfcfe;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+.model-card:hover {
+  transform: translateY(-1px);
+  border-color: #a9c5f2;
+  background: #f7faff;
+}
+
+.model-card-default {
+  border-color: #9dbcf0;
+  background: #f1f6ff;
+}
+
+.dashboard-usage {
+  grid-column: 1;
+}
+
+.dashboard-usage .usage-stats {
+  margin-inline: 0 !important;
+}
+
+.dashboard-usage .ant-statistic {
+  min-height: 105px;
+  padding: 16px;
+  border: 1px solid #e8edf4;
+  border-radius: 14px;
+  background: #fafbfd;
+}
+
+.dashboard-usage .ant-statistic-title {
+  color: #77849a;
+  font-size: 12px;
+}
+
+.dashboard-usage .ant-statistic-content {
+  color: #223a61;
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 650;
+}
+
+.dashboard-usage .ant-table-wrapper {
+  overflow: hidden;
+  border: 1px solid #e8edf4;
+  border-radius: 13px;
+}
+
+.dashboard-usage .ant-table-thead > tr > th {
+  color: #61718b;
+  background: #f7f9fc;
+  font-size: 12px;
+}
+
+.dashboard-usage .ant-table-tbody > tr > td {
+  font-size: 13px;
 }
 
 .model-card .ant-typography {
   display: block;
-}
-
-.model-card-default {
-  border-color: #91b5ee;
-  background: #f5f9ff;
 }
 
 .usage-stats {
@@ -297,8 +515,51 @@
     padding: 18px 14px;
   }
 
+  .dashboard-overview {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .dashboard-overview .dashboard-welcome {
+    align-items: flex-start;
+    flex-direction: column;
+    min-height: 0;
+    padding: 22px 18px;
+  }
+
+  .dashboard-models,
+  .dashboard-usage {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .dashboard-models > .ant-card-body,
+  .dashboard-usage > .ant-card-body,
+  .conversation-detail-card > .ant-card-body {
+    padding: 18px 14px;
+  }
+
+  .dashboard-models .ant-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .conversation-heading .ant-space {
+    width: 100%;
+  }
+
+  .conversation-detail-card .message-list {
+    min-height: 220px;
+    max-height: 56vh;
+    padding: 14px 10px;
+  }
+
   .message-bubble {
     max-width: 94%;
+    padding: 13px 14px;
+  }
+
+  .conversation-detail-card .composer textarea {
+    border-radius: 14px;
   }
 
   .topbar-actions {

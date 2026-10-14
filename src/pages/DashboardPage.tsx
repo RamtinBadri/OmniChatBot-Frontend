@@ -49,8 +49,8 @@ export function UsageDashboard() {
     { title: t('chargedAmount'), dataIndex: 'chargedAmount', key: 'chargedAmount', render: (value: number) => Number(value).toLocaleString() },
   ]
 
-  return <div className="dashboard-page">
-    <section className="welcome-panel dashboard-welcome"><Text className="eyebrow">{t('overview')}</Text><Title level={2}>{t('dashboard')}</Title><Text type="secondary">{t('dashboardDescription')}</Text><Link to="/conversations"><Button type="primary">{t('conversations')}</Button></Link></section>
+  return <div className="dashboard-page dashboard-overview">
+    <section className="welcome-panel dashboard-welcome"><div className="dashboard-welcome-copy"><Text className="eyebrow">{t('overview')}</Text><Title level={2}>{t('dashboard')}</Title><Text type="secondary">{t('dashboardDescription')}</Text></div><Link to="/conversations"><Button type="primary">{t('conversations')}</Button></Link></section>
     {error && <Alert type="error" showIcon message={t('requestFailed')} action={<Button onClick={() => setReload((current) => current + 1)}>{t('retry')}</Button>} />}
     <Card className="feature-card dashboard-models"><div className="section-heading"><div><Text className="eyebrow">{t('availableModels')}</Text><Title level={3}>{t('models')}</Title></div></div>
       {loading && !catalog ? <Skeleton active /> : catalog?.models.content.length ? <><Row gutter={[12, 12]}>{catalog.models.content.map((model) => <Col xs={24} sm={12} lg={8} key={model.id}><Card size="small" className={model.defaultModel ? 'model-card model-card-default' : 'model-card'}><Text strong>{model.name}</Text>{model.defaultModel && <Text type="secondary">{t('defaultModel')}</Text>}</Card></Col>)}</Row><Pagination className="plans-pagination" current={modelPage + 1} pageSize={catalog.models.size} total={catalog.models.totalElements} onChange={(current) => setModelPage(current - 1)} /></> : <Empty description={t('noModels')} />}

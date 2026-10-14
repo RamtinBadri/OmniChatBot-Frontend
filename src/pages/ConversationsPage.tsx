@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
 import { archiveConversation, createConversation, deleteConversation, getConversation, getConversations, getMessages, renameConversation, sendMessage, updateConversationModel } from '../api/conversations'
 import type { ConversationDTO, ConversationStatus, MessageDTO } from '../api/conversations'
-import { getModelCatalog } from '../api/models'
-import type { ModelCatalogDTO } from '../api/models'
+import { getCompleteModelCatalog } from '../api/models'
+import type { CompleteModelCatalogDTO } from '../api/models'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -23,7 +23,7 @@ export function ConversationsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
-  const [catalog, setCatalog] = useState<ModelCatalogDTO | null>(null)
+  const [catalog, setCatalog] = useState<CompleteModelCatalogDTO | null>(null)
   const [creating, setCreating] = useState(false)
   const [form] = Form.useForm()
   const [messageApi, contextHolder] = message.useMessage()
@@ -41,7 +41,7 @@ export function ConversationsPage() {
   useEffect(() => { void Promise.resolve().then(load) }, [load])
   useEffect(() => {
     let active = true
-    getModelCatalog(0, 100).then((result) => { if (active) setCatalog(result) }).catch(() => { if (active) messageApi.error(t('requestFailed')) })
+    getCompleteModelCatalog().then((result) => { if (active) setCatalog(result) }).catch(() => { if (active) messageApi.error(t('requestFailed')) })
     return () => { active = false }
   }, [messageApi, t])
 
@@ -75,7 +75,7 @@ export function ConversationsPage() {
       </> : <Empty description={t('noConversations')} />}
     </Card>
     <Modal title={t('newConversation')} open={createOpen} onCancel={() => setCreateOpen(false)} footer={null} destroyOnHidden>
-      <Form form={form} layout="vertical" onFinish={submit} initialValues={{ model: catalog?.defaultModel }}><Form.Item name="title" label={t('conversationTitle')} rules={[{ required: true, whitespace: true, message: t('required') }]}><Input maxLength={200} /></Form.Item><Form.Item name="model" label={t('chooseModel')} rules={[{ required: true, message: t('required') }]}><Select loading={!catalog} options={catalog?.models.content.map((model) => ({ value: model.id, label: `${model.name}${model.defaultModel ? ` (${t('defaultModel')})` : ''}` }))} /></Form.Item><Button className="form-submit" type="primary" htmlType="submit" loading={creating} disabled={!catalog} block>{t('create')}</Button></Form>
+      <Form form={form} layout="vertical" onFinish={submit} initialValues={{ model: catalog?.defaultModel }}><Form.Item name="title" label={t('conversationTitle')} rules={[{ required: true, whitespace: true, message: t('required') }]}><Input maxLength={200} /></Form.Item><Form.Item name="model" label={t('chooseModel')} rules={[{ required: true, message: t('required') }]}><Select showSearch optionFilterProp="label" loading={!catalog} options={catalog?.models.map((model) => ({ value: model.id, label: `${model.name}${model.defaultModel ? ` (${t('defaultModel')})` : ''}` }))} /></Form.Item><Button className="form-submit" type="primary" htmlType="submit" loading={creating} disabled={!catalog} block>{t('create')}</Button></Form>
     </Modal>
   </>
 }
@@ -91,7 +91,7 @@ export function ConversationDetailPage() {
   const [error, setError] = useState(false)
   const [sending, setSending] = useState(false)
   const [modelSaving, setModelSaving] = useState(false)
-  const [catalog, setCatalog] = useState<ModelCatalogDTO | null>(null)
+  const [catalog, setCatalog] = useState<CompleteModelCatalogDTO | null>(null)
   const [content, setContent] = useState('')
   const [renameOpen, setRenameOpen] = useState(false)
   const [renameForm] = Form.useForm()
@@ -109,7 +109,7 @@ export function ConversationDetailPage() {
   useEffect(() => { void Promise.resolve().then(load) }, [load])
   useEffect(() => {
     let active = true
-    getModelCatalog(0, 100).then((result) => { if (active) setCatalog(result) }).catch(() => { if (active) messageApi.error(t('requestFailed')) })
+    getCompleteModelCatalog().then((result) => { if (active) setCatalog(result) }).catch(() => { if (active) messageApi.error(t('requestFailed')) })
     return () => { active = false }
   }, [messageApi, t])
 
@@ -148,9 +148,9 @@ export function ConversationDetailPage() {
 
   return <>
     {contextHolder}
-    <Card className="feature-card">
-      <div className="section-heading"><div><Text className="eyebrow">{conversation.model}</Text><Title level={2}>{conversation.title}</Title></div><Space wrap><label htmlFor="conversation-model">{t('currentModel')}</label><Select id="conversation-model" aria-label={t('currentModel')} className="model-selector" value={conversation.model} loading={!catalog} disabled={modelSaving || conversation.status !== 'ACTIVE'} onChange={(value: string) => void changeModel(value)} options={catalog?.models.content.map((model) => ({ value: model.id, label: model.name })) ?? [{ value: conversation.model, label: conversation.model }]} /><Button onClick={() => { renameForm.setFieldValue('title', conversation.title); setRenameOpen(true) }}>{t('rename')}</Button><Button><Link to="/conversations">{t('backToConversations')}</Link></Button></Space></div>
-      <div className="message-list">{loading ? <Spin /> : messages.length ? messages.map((item) => <article className={`message-bubble message-${item.role.toLowerCase()}`} key={item.id}><Text strong>{t(`role_${item.role}`)}</Text><Paragraph>{item.content}</Paragraph><Text type="secondary">{new Date(item.createdAt).toLocaleString()}</Text></article>) : <Empty description={t('noMessages')} />}</div>
+    <Card className="feature-card conversation-detail-card">
+      <div className="section-heading conversation-heading"><div><Text className="eyebrow">{conversation.model}</Text><Title level={2}>{conversation.title}</Title></div><Space wrap><label htmlFor="conversation-model">{t('currentModel')}</label><Select id="conversation-model" aria-label={t('currentModel')} className="model-selector" showSearch optionFilterProp="label" value={conversation.model} loading={!catalog} disabled={modelSaving || conversation.status !== 'ACTIVE'} onChange={(value: string) => void changeModel(value)} options={catalog?.models.map((model) => ({ value: model.id, label: model.name })) ?? [{ value: conversation.model, label: conversation.model }]} /><Button onClick={() => { renameForm.setFieldValue('title', conversation.title); setRenameOpen(true) }}>{t('rename')}</Button><Button><Link to="/conversations">{t('backToConversations')}</Link></Button></Space></div>
+      <div className="message-list">{loading ? <Spin /> : messages.length ? messages.map((item) => <article className={`message-bubble message-${item.role.toLowerCase()}`} key={item.id}><Text strong>{t(`role_${item.role}`)}</Text><Paragraph className="message-content" dir="auto">{item.content}</Paragraph><Text type="secondary">{new Date(item.createdAt).toLocaleString()}</Text></article>) : <Empty description={t('noMessages')} />}</div>
       <Pagination className="plans-pagination" current={page + 1} pageSize={30} total={total} onChange={(current) => setPage(current - 1)} />
       {conversation.status === 'ACTIVE' ? <div className="composer"><Input.TextArea value={content} onChange={(event) => setContent(event.target.value)} rows={3} placeholder={t('messagePlaceholder')} onPressEnter={(event) => { if (!event.shiftKey) { event.preventDefault(); void send() } }} /><Button type="primary" loading={sending} disabled={!content.trim()} onClick={() => void send()}>{t('send')}</Button></div> : <Alert type="info" message={t('conversationArchived')} />}
     </Card>
