@@ -1,4 +1,5 @@
 import apiClient from './client'
+import type { PageDTO } from './types'
 
 export interface PlanDTO {
   id: string
@@ -11,16 +12,7 @@ export interface PlanDTO {
   updatedAt: string
 }
 
-export interface PageDTO<T> {
-  content: T[]
-  totalElements: number
-  totalPages: number
-  number: number
-  size: number
-  first: boolean
-  last: boolean
-}
-
+export type { PageDTO } from './types'
 export async function getPlans(page = 0, size = 10): Promise<PageDTO<PlanDTO>> {
   const { data } = await apiClient.get<PageDTO<PlanDTO>>('/plans', { params: { page, size } })
   return data
