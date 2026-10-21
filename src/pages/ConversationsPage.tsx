@@ -90,6 +90,7 @@ export function ConversationDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [sending, setSending] = useState(false)
+  const [animatedMessageIds, setAnimatedMessageIds] = useState<string[]>([])
   const [modelSaving, setModelSaving] = useState(false)
   const [catalog, setCatalog] = useState<CompleteModelCatalogDTO | null>(null)
   const [content, setContent] = useState('')
@@ -115,17 +116,37 @@ export function ConversationDetailPage() {
 
   async function send() {
     const text = content.trim()
-    if (!text || !conversation) return
+    if (!text || !conversation || sending) return
     setSending(true)
+    const optimisticId = `pending-${Date.now()}`
+    if (page === 0) {
+      setMessages((current) => [...current, {
+        id: optimisticId,
+        conversationId: conversation.id,
+        role: 'USER',
+        content: text,
+        createdAt: new Date().toISOString(),
+      }])
+      setTotal((current) => current + 1)
+      setAnimatedMessageIds((current) => [...current, optimisticId])
+    }
     try {
       const exchange = await sendMessage(conversation.id, text)
       setContent('')
       if (page !== 0) setPage(0)
       else {
-        setMessages((current) => [...current, exchange.userMessage, exchange.assistantMessage])
-        setTotal((current) => current + 2)
+        setMessages((current) => [...current.filter((item) => item.id !== optimisticId), exchange.userMessage, exchange.assistantMessage])
+        setTotal((current) => current + 1)
+        setAnimatedMessageIds((current) => [...current.filter((id) => id !== optimisticId), exchange.userMessage.id, exchange.assistantMessage.id])
       }
-    } catch { messageApi.error(t('requestFailed')) } finally { setSending(false) }
+    } catch {
+      if (page === 0) {
+        setMessages((current) => current.filter((item) => item.id !== optimisticId))
+        setTotal((current) => Math.max(0, current - 1))
+        setAnimatedMessageIds((current) => current.filter((id) => id !== optimisticId))
+      }
+      messageApi.error(t('requestFailed'))
+    } finally { setSending(false) }
   }
 
   async function rename(values: { title: string }) {
@@ -150,8 +171,8 @@ export function ConversationDetailPage() {
     {contextHolder}
     <Card className="feature-card conversation-detail-card">
       <div className="section-heading conversation-heading"><div><Text className="eyebrow">{conversation.model}</Text><Title level={2}>{conversation.title}</Title></div><Space wrap><label htmlFor="conversation-model">{t('currentModel')}</label><Select id="conversation-model" aria-label={t('currentModel')} className="model-selector" showSearch optionFilterProp="label" value={conversation.model} loading={!catalog} disabled={modelSaving || conversation.status !== 'ACTIVE'} onChange={(value: string) => void changeModel(value)} options={catalog?.models.map((model) => ({ value: model.id, label: model.name })) ?? [{ value: conversation.model, label: conversation.model }]} /><Button onClick={() => { renameForm.setFieldValue('title', conversation.title); setRenameOpen(true) }}>{t('rename')}</Button><Button><Link to="/conversations">{t('backToConversations')}</Link></Button></Space></div>
-      <div className="message-list">{loading ? <Spin /> : messages.length ? messages.map((item) => <article className={`message-bubble message-${item.role.toLowerCase()}`} key={item.id}><Text strong>{t(`role_${item.role}`)}</Text><Paragraph className="message-content" dir="auto">{item.content}</Paragraph><Text type="secondary">{new Date(item.createdAt).toLocaleString()}</Text></article>) : <Empty description={t('noMessages')} />}</div>
-      <Pagination className="plans-pagination" current={page + 1} pageSize={30} total={total} onChange={(current) => setPage(current - 1)} />
+      <div className="message-list">{loading ? <Spin /> : messages.length ? messages.map((item) => <article className={`message-bubble message-${item.role.toLowerCase()}${animatedMessageIds.includes(item.id) ? ' message-enter' : ''}`} key={item.id} onAnimationEnd={() => setAnimatedMessageIds((current) => current.filter((id) => id !== item.id))}><Text strong>{t(`role_${item.role}`)}</Text><Paragraph className="message-content" dir="auto">{item.content}</Paragraph><Text type="secondary">{new Date(item.createdAt).toLocaleString()}</Text></article>) : <Empty description={t('noMessages')} />}{sending && <div className="message-bubble message-assistant assistant-typing" role="status" aria-live="polite" aria-label={t('assistantThinking')}><span className="typing-dots" aria-hidden="true"><span /><span /><span /></span><span className="typing-label">{t('assistantThinking')}</span></div>}</div>
+      <Pagination className="plans-pagination" current={page + 1} pageSize={30} total={total} disabled={sending} onChange={(current) => setPage(current - 1)} />
       {conversation.status === 'ACTIVE' ? <div className="composer"><Input.TextArea value={content} onChange={(event) => setContent(event.target.value)} rows={3} placeholder={t('messagePlaceholder')} onPressEnter={(event) => { if (!event.shiftKey) { event.preventDefault(); void send() } }} /><Button type="primary" loading={sending} disabled={!content.trim()} onClick={() => void send()}>{t('send')}</Button></div> : <Alert type="info" message={t('conversationArchived')} />}
     </Card>
     <Modal title={t('rename')} open={renameOpen} onCancel={() => setRenameOpen(false)} footer={null}><Form form={renameForm} layout="vertical" onFinish={rename}><Form.Item name="title" label={t('conversationTitle')} rules={[{ required: true, whitespace: true, message: t('required') }]}><Input maxLength={200} /></Form.Item><Button type="primary" htmlType="submit" block>{t('save')}</Button></Form></Modal>
