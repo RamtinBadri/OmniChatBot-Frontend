@@ -132,7 +132,10 @@ function Workspace({ colorTheme, onThemeChange }: { colorTheme: ColorTheme; onTh
 
   return <Layout className="workspace" hasSider>
     <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme={colorTheme} className="sidebar">
-      <div className="brand-mark">{t('appName')}</div><div className="menu-caption">{t('navigation')}</div>
+      <div className="brand-mark">
+        <img className="brand-logo" src="/omnichatbot-logo.svg" alt="" />
+        <span className="brand-name">{t('appName')}</span>
+      </div><div className="menu-caption">{t('navigation')}</div>
       <Menu mode="inline" selectedKeys={[selectedPath]} items={items} />
     </Sider>
     <Layout>

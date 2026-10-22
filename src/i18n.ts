@@ -4,7 +4,7 @@ import { initReactI18next } from 'react-i18next'
 const resources = {
   en: {
     translation: {
-      appName: 'AI Platform',
+      appName: 'OmniChatBot',
       navigation: 'Navigation',
       theme: 'Theme',
       lightTheme: 'Light',
@@ -204,7 +204,7 @@ const resources = {
   },
   fa: {
     translation: {
-      appName: 'پلتفرم هوش مصنوعی',
+      appName: 'OmniChatBot',
       navigation: 'راهنما',
       theme: 'پوسته',
       lightTheme: 'روشن',

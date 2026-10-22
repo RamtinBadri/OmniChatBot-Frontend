@@ -12,11 +12,23 @@
   min-height: 68px;
   display: flex;
   align-items: center;
+  gap: 10px;
   padding: 0 22px;
   color: var(--accent-strong);
   font-size: 17px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.brand-logo {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+}
+
+.brand-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu-caption {
@@ -33,9 +45,12 @@
 }
 
 .sidebar.ant-layout-sider-collapsed .brand-mark {
-  overflow: hidden;
+  justify-content: center;
   padding-inline: 0;
-  font-size: 0;
+}
+
+.sidebar.ant-layout-sider-collapsed .brand-name {
+  display: none;
 }
 
 .sidebar.ant-layout-sider-collapsed .menu-caption {
