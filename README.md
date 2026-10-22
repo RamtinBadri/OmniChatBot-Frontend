@@ -1,75 +1,102 @@
-# React + TypeScript + Vite
+# OmniChatBot
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+OmniChatBot is a bilingual AI chat and account-management web application. The frontend is built with React, TypeScript, Vite, and Ant Design, and communicates with the OmniChatBot backend over its REST API.
 
-Currently, two official plugins are available:
+## Screenshots and demos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Screenshots and animated walkthroughs are stored in [`media/`](media/).
 
-## React Compiler
+### Sign in
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+![OmniChatBot sign-in page](media/auth_page.png)
 
-## Expanding the ESLint configuration
+### Dashboard
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+![Dashboard walkthrough](media/dashboard.gif)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Conversations
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+![Conversation walkthrough](media/conversation.gif)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Support tickets
 
+![Support tickets walkthrough](media/tickets.gif)
+
+### Administration
+
+| User management | Usage management |
+|---|---|
+| ![User management walkthrough](media/user_management.gif) | ![Usage management walkthrough](media/usage_management.gif) |
+
+| Transaction management | Plan management |
+|---|---|
+| ![Transaction management walkthrough](media/transaction_management.gif) | ![Plan management walkthrough](media/plan_management.gif) |
+
+### Model pricing
+
+![Model pricing walkthrough](media/model_pricing.gif)
+
+## Features
+
+- Account registration, sign-in, and profile management.
+- AI conversations with model selection and message history.
+- Usage dashboard with usage summaries and available model catalog.
+- Support ticket creation and ticket history.
+- Public plan browsing.
+- Admin dashboard and management views for users, subscriptions, usage, transactions, plans, and model pricing.
+- English and Persian translations, including right-to-left layout support.
+- Light and dark themes.
+
+## Requirements
+
+- Node.js and npm.
+- A running compatible backend API. By default, the frontend expects it at `http://localhost:8080/api`.
+
+## Getting started
+
+```sh
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Vite prints the local development URL after startup.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+To use a backend at another URL, create a `.env.local` file in the project root and set:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```dotenv
+VITE_API_BASE_URL=http://localhost:8080/api
 ```
+
+Replace the value with the backend API base URL for your environment. Vite loads this variable at startup, so restart the dev server after changing it. Do not put secrets in `VITE_*` variables: values exposed to the frontend are included in the browser bundle.
+
+## Available scripts
+
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Start the Vite development server. |
+| `npm run lint` | Run ESLint. |
+| `npm run build` | Type-check the project and create a production build in `dist/`. |
+| `npm run preview` | Serve the production build locally for preview. |
+
+## Tech stack
+
+- React 19 and TypeScript
+- Vite
+- Ant Design and Ant Design Icons
+- React Router
+- i18next and react-i18next
+- Axios
+
+## Project structure
+
+```text
+public/       Static assets, logo, and favicon
+media/  Product screenshots and animated walkthroughs
+src/api/      Backend API clients and DTOs
+src/pages/    Application pages
+src/           App shell, styles, translations, and entry point
+```
+
+## License
+
+No license is specified in this repository yet.
