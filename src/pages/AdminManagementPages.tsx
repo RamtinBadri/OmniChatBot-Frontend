@@ -15,6 +15,10 @@ import { getAdminTransaction, getAdminTransactions, updateAdminTransactionStatus
 import type { TransactionDTO, TransactionStatus, TransactionType } from '../api/transactions'
 import { createAdminPlan, deactivateAdminPlan, getAdminPlan, getPlanSubscriptions, getPlans, updateAdminPlan } from '../api/plans'
 import type { PlanDTO, PlanRequest } from '../api/plans'
+import { deactivateAdminModelPricing, getAdminModelPricing, saveAdminModelPricing } from '../api/modelPricing'
+import type { ModelPricingDTO, ModelPricingRequest } from '../api/modelPricing'
+import { getCompleteModelCatalog } from '../api/models'
+import type { AvailableModelDTO } from '../api/models'
 
 const { Title, Text } = Typography
 const pageSizes = [10, 20, 50]
@@ -110,6 +114,61 @@ export function AdminPlansPage() {
     <Modal title={t(editing ? 'editPlan' : 'createPlan')} open={formOpen} onCancel={() => setFormOpen(false)} footer={null} destroyOnHidden><Form form={form} layout="vertical" onFinish={savePlan}><Form.Item name="name" label={t('planName')} rules={[{ required: true, whitespace: true }]}><Input maxLength={120} /></Form.Item><Form.Item name="price" label={t('price')} rules={[{ required: true }]}><InputNumber min={0} precision={2} className="admin-number" /></Form.Item><Form.Item name="duration" label={t('durationDays')} rules={[{ required: true }]}><InputNumber min={1} precision={0} className="admin-number" /></Form.Item><Form.Item name="creditLimit" label={t('creditLimit')} rules={[{ required: true }]}><InputNumber min={0} precision={2} className="admin-number" /></Form.Item><Form.Item name="active" label={t('status')} rules={[{ required: true }]}><Select options={[{ value: true, label: t('active') }, { value: false, label: t('inactive') }]} /></Form.Item><Button type="primary" htmlType="submit" loading={saving} block>{t('save')}</Button></Form></Modal>
     <Modal title={selectedPlan ? `${t('subscriptionsFor')} ${selectedPlan.name}` : ''} open={Boolean(selectedPlan)} onCancel={() => setSelectedPlan(null)} footer={null} width={800}><Table<SubscriptionDTO> rowKey="id" loading={subsLoading} dataSource={subs?.content ?? []} pagination={{ current: subsPage + 1, pageSize: 10, total: subs?.totalElements ?? 0, onChange: async (current) => { const next = current - 1; setSubsPage(next); if (selectedPlan) { setSubsLoading(true); try { setSubs(await getPlanSubscriptions(selectedPlan.id, next, 10)) } catch { api.error(t('requestFailed')) } finally { setSubsLoading(false) } } } }} columns={[{ title: t('userId'), dataIndex: 'userId' }, { title: t('status'), dataIndex: 'status', render: (v: SubscriptionStatus) => t(`subscription_${v}`) }, { title: t('pricePaid'), dataIndex: 'pricePaid', render: (v: number) => v.toLocaleString() }, { title: t('endDate'), dataIndex: 'endDate', render: (v: string) => new Date(v).toLocaleDateString() }]} /></Modal>
   </>
+}
+
+export function AdminModelPricingPage() {
+  const { api, contextHolder, t } = useAdminMessage()
+  const [catalog, setCatalog] = useState<AvailableModelDTO[]>([])
+  const [pricing, setPricing] = useState<ModelPricingDTO[]>([])
+  const [defaults, setDefaults] = useState({ input: 0, output: 0 })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [editing, setEditing] = useState<AvailableModelDTO | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [form] = Form.useForm<ModelPricingRequest>()
+
+  const load = useCallback(async () => {
+    setLoading(true); setError(false)
+    try {
+      const [models, config] = await Promise.all([getCompleteModelCatalog(), getAdminModelPricing()])
+      setCatalog(models.models)
+      setPricing(config.pricing)
+      setDefaults({ input: config.defaultInputPricePerMillion, output: config.defaultOutputPricePerMillion })
+    } catch { setError(true) } finally { setLoading(false) }
+  }, [])
+  useEffect(() => { void Promise.resolve().then(load) }, [load])
+
+  const byModel = new Map(pricing.map((item) => [item.model, item]))
+  const catalogById = new Map(catalog.map((model) => [model.id, model]))
+  const rows = [...new Set([...catalog.map((model) => model.id), ...pricing.map((item) => item.model)])].map((id) => {
+    const model = catalogById.get(id) ?? { id, name: id, defaultModel: false }
+    const config = byModel.get(id)
+    return {
+      ...model,
+      id,
+      config,
+      input: config?.active ? config.inputPricePerMillion : defaults.input,
+      output: config?.active ? config.outputPricePerMillion : defaults.output,
+    }
+  })
+
+  async function save(values: ModelPricingRequest) {
+    if (!editing) return
+    setSaving(true)
+    try {
+      await saveAdminModelPricing(editing.id, { ...values, model: editing.id })
+      api.success(t('modelPricingSaved')); setEditing(null); form.resetFields(); void load()
+    } catch { api.error(t('requestFailed')) } finally { setSaving(false) }
+  }
+
+  const columns: TableProps<typeof rows[number]>['columns'] = [
+    { title: t('model'), dataIndex: 'name', key: 'name', render: (name: string, row) => <><Text strong>{name}</Text><br /><Text type="secondary">{row.id}</Text></> },
+    { title: t('inputPricePerMillion'), dataIndex: 'input', key: 'input', render: (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 6 }) },
+    { title: t('outputPricePerMillion'), dataIndex: 'output', key: 'output', render: (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 6 }) },
+    { title: t('configuration'), key: 'status', render: (_: unknown, row) => row.config ? <Tag color={row.config.active ? 'green' : 'default'}>{t(row.config.active ? 'customPricing' : 'inactiveFallback')}</Tag> : <Tag>{t('defaultPricing')}</Tag> },
+    { title: t('actions'), key: 'actions', render: (_: unknown, row) => <Space><Button type="link" onClick={() => { setEditing(row); form.setFieldsValue({ inputPricePerMillion: row.config?.inputPricePerMillion ?? defaults.input, outputPricePerMillion: row.config?.outputPricePerMillion ?? defaults.output, active: row.config?.active ?? true }); }}>{t('edit')}</Button>{row.config?.active && <Popconfirm title={t('deactivateModelPricingConfirm')} onConfirm={async () => { try { await deactivateAdminModelPricing(row.id); api.success(t('modelPricingDeactivated')); void load() } catch { api.error(t('requestFailed')) } }}><Button type="link" danger>{t('deactivate')}</Button></Popconfirm>}</Space> },
+  ]
+  return <>{contextHolder}<Panel title={t('modelPricingManagement')}><Alert type="info" showIcon message={t('defaultPricingRates', { input: defaults.input, output: defaults.output })} />{error ? <Retry onRetry={() => void load()} /> : <Table rowKey="id" columns={columns} dataSource={rows} loading={loading} locale={{ emptyText: <Empty description={t('noModels')} /> }} pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: pageSizes }} scroll={{ x: 800 }} />}</Panel><Modal title={editing ? `${t('edit')} ${editing.name}` : ''} open={Boolean(editing)} onCancel={() => { setEditing(null); form.resetFields() }} footer={null} destroyOnHidden><Form form={form} layout="vertical" onFinish={save}><Form.Item name="inputPricePerMillion" label={t('inputPricePerMillion')} rules={[{ required: true }, { type: 'number', min: 0 }]}><InputNumber min={0} precision={6} className="admin-number" /></Form.Item><Form.Item name="outputPricePerMillion" label={t('outputPricePerMillion')} rules={[{ required: true }, { type: 'number', min: 0 }]}><InputNumber min={0} precision={6} className="admin-number" /></Form.Item><Form.Item name="active" label={t('configuration')}><Select options={[{ value: true, label: t('customPricing') }, { value: false, label: t('inactiveFallback') }]} /></Form.Item><Text type="secondary">{t('inactivePricingUsesDefault')}</Text><Button type="primary" htmlType="submit" loading={saving} block className="form-submit">{t('save')}</Button></Form></Modal></>
 }
 
 function Retry({ onRetry }: { onRetry: () => void }) { const { t } = useTranslation(); return <Alert type="error" showIcon message={t('requestFailed')} action={<Button size="small" onClick={onRetry}>{t('retry')}</Button>} /> }

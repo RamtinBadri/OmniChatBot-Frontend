@@ -10,7 +10,7 @@ import { TicketDetailPage, TicketsPage } from './pages/TicketsPage'
 import { ConversationsPage, ConversationDetailPage } from './pages/ConversationsPage'
 import { PlansPage } from './pages/PlansPage'
 import { AdminDashboardPage } from './pages/AdminPage'
-import { AdminPlansPage, AdminSubscriptionsPage, AdminTransactionsPage, AdminUsagePage, AdminUsersPage } from './pages/AdminManagementPages'
+import { AdminModelPricingPage, AdminPlansPage, AdminSubscriptionsPage, AdminTransactionsPage, AdminUsagePage, AdminUsersPage } from './pages/AdminManagementPages'
 import { UsageDashboard } from './pages/DashboardPage'
 import { getAccessToken, logout } from './api/auth'
 import { getCurrentUser } from './api/users'
@@ -106,7 +106,7 @@ function Workspace({ colorTheme, onThemeChange }: { colorTheme: ColorTheme; onTh
   }, [authenticated, navigate])
 
   const isAdmin = user?.userRole === 'ADMIN'
-  const adminPaths = ['/admin/users', '/admin/subscriptions', '/admin/usage', '/admin/transactions', '/admin/plans']
+  const adminPaths = ['/admin/users', '/admin/subscriptions', '/admin/usage', '/admin/transactions', '/admin/plans', '/admin/model-pricing']
   const selectedPath = location.pathname.startsWith('/tickets/') || location.pathname.startsWith('/admin/tickets/')
     ? (isAdmin ? '/admin/tickets' : '/tickets')
     : adminPaths.find((path) => location.pathname.startsWith(path)) ?? location.pathname
@@ -122,6 +122,7 @@ function Workspace({ colorTheme, onThemeChange }: { colorTheme: ColorTheme; onTh
         { key: '/admin/usage', icon: <DatabaseOutlined />, label: <NavLink to="/admin/usage">{t('usageManagement')}</NavLink> },
         { key: '/admin/transactions', icon: <DollarOutlined />, label: <NavLink to="/admin/transactions">{t('transactionManagement')}</NavLink> },
         { key: '/admin/plans', icon: <SettingOutlined />, label: <NavLink to="/admin/plans">{t('planManagement')}</NavLink> },
+        { key: '/admin/model-pricing', icon: <DollarOutlined />, label: <NavLink to="/admin/model-pricing">{t('modelPricingManagement')}</NavLink> },
       ] : []),
     ] : []),
     { key: '/plans', icon: <TagsOutlined />, label: <NavLink to="/plans">{t('plans')}</NavLink> },
@@ -157,6 +158,7 @@ function Workspace({ colorTheme, onThemeChange }: { colorTheme: ColorTheme; onTh
           <Route path="/admin/usage" element={adminRoute(<AdminUsagePage />)} />
           <Route path="/admin/transactions" element={adminRoute(<AdminTransactionsPage />)} />
           <Route path="/admin/plans" element={adminRoute(<AdminPlansPage />)} />
+          <Route path="/admin/model-pricing" element={adminRoute(<AdminModelPricingPage />)} />
           <Route path="/profile" element={authenticated ? <ProfilePage /> : <Navigate to="/login" replace />} />
           <Route path="/plans" element={<PlansPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
